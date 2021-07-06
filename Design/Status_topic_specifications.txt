@@ -1,0 +1,41 @@
+Device commands on Status topic:
+<dev>/CONNECT/<dev_type>
+<dev>/DISCONNECT
+<dev>/REGISTER/<topic1>:<topic1_type>,<topic2>:<topic2_type>,...
+<dev>/UNREGISTER/<topic1>,<topic2>,...
+
+<dev_type> is one of:
+- sensor
+- actuator
+- stream
+
+<topic_type> is one of:
+- text
+- binary
+
+
+An element in connected_devs has the following format:
+<dev_name>:{
+   		"type":<type>,
+   		"topics":{ <topic1>:<topic1_type>, 
+   			   <topic2>:<topic2_type>, 
+			 }
+           }
+
+
+subscribed_topics is an object with each element following this format:
+<topic_name>:{
+		"type":<topic_type>,
+		"dev":<dev_name>,
+	     }
+
+
+send_data is an object with each element having following format:
+<dev_name>:{
+		<topic1>:{"type":<topic1_type>, "data":<topic1_data>},
+		<topic2>:{"type":<topic2_type>, "data":<topic2_data>},
+	   }
+
+
+NOTES:
+- for now topic names must be unique

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>dshn Dashboard</title>
+    </head>
+    <body>
+        <p>Dashboard:</p><br>
+        <div id="dashboard"></div>
+    </body>
+    <script>
+        var portStr="";
+        if (location.port != "")
+        {
+            portStr=":"+location.port;
+        }
+        var protocolStr="ws";
+        if (location.protocol === 'https:') {
+            protocolStr="wss";
+        }
+        console.log(protocolStr+'://' + location.hostname + portStr+"/client");
+        var ws = new WebSocket(protocolStr+'://' + location.hostname + portStr+"/client");	
+
+        // Connection opened
+        ws.addEventListener('open', function (event) {
+            ws.send('Hello Server!');
+        });
+
+        // Listen for messages
+        ws.addEventListener('message', function (event) {
+            // parse data
+            // console.log(event.data);
+            // document.getElementById("field1").innerHTML = event.data;
+            const msg = JSON.parse(event.data);
+            for (const d in msg) {
+                // first create a div for each device (if not existed yet)
+                let ddiv = document.getElementById(d);
+                if (ddiv == null) {
+                    ddiv = document.createElement('div');
+                    ddiv.setAttribute('id', d);
+                    ddiv.appendChild(document.createTextNode(d));
+                    document.getElementById("dashboard").appendChild(ddiv);
+                } 
+                // then create a child div for each topic (if not existed yet)
+                // a topic div has 2 TextNode's:
+                //      - topic name
+                //      - topic data
+                for (const t in msg[d]) {
+                    let tdiv = document.getElementById(`${d}-${t}`);
+                    if (tdiv == null) {
+                        tdiv = document.createElement('div');
+                        tdiv.setAttribute('id', `${d}-${t}`);
+                        tdiv.appendChild(document.createTextNode(`${t}: `));
+                        tdiv.appendChild(document.createTextNode(msg[d][t].data));
+                        document.getElementById(d).appendChild(tdiv);
+                    }
+                    tdiv.lastChild.nodeValue = msg[d][t].data;
+                }
+            }
+        });
+    </script>
+</html>
