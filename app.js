@@ -80,11 +80,15 @@ mqttClient.on('message', function (topic, message) {
         let dev_command = msg_array[1];
         switch (dev_command) {
             case 'CONNECT':
-                connected_devs[dev_name] = {"type":msg_array[2], "topics":{}};
+                if (!connected_devs.hasOwnProperty(dev_name)) {
+                    connected_devs[dev_name] = {"type":msg_array[2], "topics":{}};
+                } else {
+                    console.log(`WARNING: Device ${dev_name} is already added`);
+                }
                 break;
             case 'DISCONNECT':
                 if (!connected_devs.hasOwnProperty(dev_name)) {
-                    console.log(`WARNING: Can't Delete - Device Name Not Found: ${dev_name}`);
+                    console.log(`WARNING: Can't delete - Device name not found: ${dev_name}`);
                 } else {
                     delete connected_devs[dev_name];
                     for (t in subscribed_topics) {
