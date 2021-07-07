@@ -1,5 +1,13 @@
 <!DOCTYPE html>
 <html>
+    <style>
+        .class_connected_devs {
+            color: green;
+        }
+        .class_disconnected_devs {
+            color: red;
+        }
+    </style>
     <head>
         <title>dshn Dashboard</title>
     </head>
@@ -37,6 +45,7 @@
                 if (ddiv == null) {
                     ddiv = document.createElement('div');
                     ddiv.setAttribute('id', d);
+                    ddiv.setAttribute('class', 'class_connected_devs');
                     ddiv.appendChild(document.createTextNode(d));
                     document.getElementById("dashboard").appendChild(ddiv);
                 } 
@@ -45,15 +54,19 @@
                 //      - topic name
                 //      - topic data
                 for (const t in msg[d]) {
-                    let tdiv = document.getElementById(`${d}-${t}`);
-                    if (tdiv == null) {
-                        tdiv = document.createElement('div');
-                        tdiv.setAttribute('id', `${d}-${t}`);
-                        tdiv.appendChild(document.createTextNode(`${t}: `));
-                        tdiv.appendChild(document.createTextNode(msg[d][t].data));
-                        document.getElementById(d).appendChild(tdiv);
+                    if (t == "disconnected") {
+                        ddiv.setAttribute('class', 'class_disconnected_devs');
+                    } else {
+                        let tdiv = document.getElementById(`${d}-${t}`);
+                        if (tdiv == null) {
+                            tdiv = document.createElement('div');
+                            tdiv.setAttribute('id', `${d}-${t}`);
+                            tdiv.appendChild(document.createTextNode(`${t}: `));
+                            tdiv.appendChild(document.createTextNode(msg[d][t].data));
+                            document.getElementById(d).appendChild(tdiv);
+                        }
+                        tdiv.lastChild.nodeValue = msg[d][t].data;
                     }
-                    tdiv.lastChild.nodeValue = msg[d][t].data;
                 }
             }
         });

@@ -9,6 +9,8 @@ const wss_clients = new WebSocket.Server({ noServer: true });
 const wss_streams = new WebSocket.Server({ noServer: true });
 
 var mqtt = require('mqtt');
+const { connect } = require('mqtt');
+const { connected, send } = require('process');
 var mqttClient = mqtt.connect('mqtt://192.168.0.101:2883');
 
 /* Custom libraries */
@@ -81,7 +83,22 @@ mqttClient.on('message', function (topic, message) {
                 connected_devs[dev_name] = {"type":msg_array[2], "topics":{}};
                 break;
             case 'DISCONNECT':
-                delete connected_devs[dev_name];
+                if (!connected_devs.hasOwnProperty(dev_name)) {
+                    console.log(`WARNING: Can't Delete - Device Name Not Found: ${dev_name}`);
+                } else {
+                    delete connected_devs[dev_name];
+                    for (t in subscribed_topics) {
+                        if (subscribed_topics[t].dev == dev_name) delete subscribed_topics[t];
+                    }
+
+                    // notify client about disconnection
+                    if (data_sent) {
+                        send_data = {};
+                        data_sent = false;
+                    }
+                    send_data[dev_name] = { "disconnected":"" };
+                }
+
                 break;
             case 'REGISTER':
                 if (!connected_devs.hasOwnProperty(dev_name)) {
@@ -113,6 +130,8 @@ mqttClient.on('message', function (topic, message) {
                 let to_delete = msg_array[2].split(',');
                 for (let i = 0; i < to_delete.length; ++i) {
                     delete connected_devs[dev_name].topics[to_delete[i]];
+                    delete subscribed_topics[to_delete[i]];
+
                     // unsubscribe
                     mqttClient.unsubscribe(to_delete[i], function (err) {
                         if (err) {
@@ -150,6 +169,13 @@ wss_clients.on('connection', function connection(ws) {
         // process commands from clients here
         console.log(`wss_clients Received msg: ${msg}`);
     });
+    
+    // send a welcome message containing a list of connected devices
+    let msg_welcome = {};
+    for (cdev in connected_devs) {
+        msg_welcome[cdev] = {};
+    }
+    ws.send(JSON.stringify(msg_welcome));
 });
 
 server.on('upgrade', function upgrade(request, socket, head) {

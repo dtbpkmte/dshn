@@ -43,6 +43,8 @@ Updates:
 - 06/07/2021:
     - Completed device managing code in server
     - Completed sensor data transmission in server and client sides
+- 07/07/2021:
+    - Web UI now shows connectivity of devices: green is connected, red is disconnected (achieved by using 2 classes)
 
 Credits and References
 ----------------------
