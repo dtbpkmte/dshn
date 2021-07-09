@@ -11,7 +11,8 @@ Device commands on Status topic:
 
 <topic_type> is one of:
 - text
-- binary
+- audio
+- video
 
 
 An element in connected_devs has the following format:

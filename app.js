@@ -1,5 +1,7 @@
-const express = require('express')
-const app = express()
+const express = require('express');
+const app = express();
+app.use(express.static('js'));
+
 const server = require('http').createServer(app);
 const httpPort = 3000
 
@@ -52,7 +54,7 @@ function broadcastData() {
         data_sent = true;
     }
 }
-const broadcastInterval = setInterval(broadcastData, 10); // sends data every 10ms
+const broadcastInterval = setInterval(broadcastData, 5); // sends data every 10ms
 
 /**********End of Section **********/
 
@@ -163,7 +165,21 @@ mqttClient.on('message', function (topic, message) {
         if (!send_data.hasOwnProperty(dev_name)) {
             send_data[dev_name] = {};
         }
-        send_data[dev_name][topic] = {"type": subscribed_topics[topic].type, "data": message.toString()};
+        let d;
+        if (subscribed_topics[topic].type == 'text') {
+            d = message.toString();
+        } else if (subscribed_topics[topic].type == 'audio') {
+            // let uint8msg = new Uint8Array(message);
+            d = message;
+            // for (let i = 0; i < message.length; i += 2) {
+            //     d.push(message[i] << 8 | message[i+1]);
+            // }
+        } else {
+            // idk...
+            d = message.toString();
+        }
+        send_data[dev_name][topic] = {"type": subscribed_topics[topic].type, 
+                                      "data": d};
     }
 });
 

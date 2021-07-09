@@ -49,4 +49,16 @@ Updates:
 Credits and References
 ----------------------
 
+### References
+
 - Using WebSocket and camera streaming: https://github.com/Inglebard/esp32cam-relay/tree/main/nodejs_server
+
+### Libraries used:
+
+- Server side (NodeJS):
+    - Express.js
+    - ws
+    - MQTT.js
+
+- Template:
+    - 

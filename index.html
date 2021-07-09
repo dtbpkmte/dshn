@@ -15,7 +15,38 @@
         <p>Dashboard:</p><br>
         <div id="dashboard"></div>
     </body>
+    <script type="text/javascript" src="pcm-player.min.js"></script>
     <script>
+        // audio
+        // let AudioContext = window.AudioContext || window.webkitAudioContext;
+        // let audioCtx;
+        // let channels = 1;
+
+        // function initAudio() {
+        //     audioCtx = new AudioContext({sampleRate: 8000});
+        // }
+
+        // function playSound(arr) {
+        //     if(!audioCtx) {
+        //         initAudio();
+        //     }
+        //     var buf = new Float32Array(arr.length)
+        //     for (var i = 0; i < arr.length; i++) buf[i] = arr[i]
+        //     var buffer = audioCtx.createBuffer(1, buf.length, audioCtx.sampleRate)
+        //     buffer.copyToChannel(buf, 0)
+        //     var source = audioCtx.createBufferSource();
+        //     source.buffer = buffer;
+        //     source.connect(audioCtx.destination);
+        //     source.start(0);
+        // }
+        let player = new PCMPlayer({
+            encoding: '16bitInt',
+            channels: 1,
+            sampleRate: 8000,
+            flushingTime: 2000
+        });
+
+        // WebSocket
         var portStr="";
         if (location.port != "")
         {
@@ -27,6 +58,7 @@
         }
         console.log(protocolStr+'://' + location.hostname + portStr+"/client");
         var ws = new WebSocket(protocolStr+'://' + location.hostname + portStr+"/client");	
+        ws.binaryType = "arraybuffer";
 
         // Connection opened
         ws.addEventListener('open', function (event) {
@@ -57,15 +89,36 @@
                     if (t == "disconnected") {
                         ddiv.setAttribute('class', 'class_disconnected_devs');
                     } else {
-                        let tdiv = document.getElementById(`${d}-${t}`);
+                        let tdiv = document.getElementById(`${d}_${t}`);
+                        let content = document.getElementById(`${d}_${t}_content`);
                         if (tdiv == null) {
+                            // create topic div
                             tdiv = document.createElement('div');
-                            tdiv.setAttribute('id', `${d}-${t}`);
+                            tdiv.setAttribute('id', `${d}_${t}`);
+                            // topic name
                             tdiv.appendChild(document.createTextNode(`${t}: `));
-                            tdiv.appendChild(document.createTextNode(msg[d][t].data));
+                            // generate content element
+                            if (msg[d][t].type == 'text') {
+                                content = document.createElement('p');
+                                content.appendChild(document.createTextNode(msg[d][t].data));
+                            } else if (msg[d][t].type == 'audio') {
+                                content = document.createElement('audio');
+                            } else {
+                                console.log("Unhandled content type");
+                            }
+                            content.setAttribute('id', `${d}_${t}_content`);
+                            // then add to topic div
+                            tdiv.appendChild(content);
+                            // add topic to device div
                             document.getElementById(d).appendChild(tdiv);
                         }
-                        tdiv.lastChild.nodeValue = msg[d][t].data;
+                        if (msg[d][t].type == 'text') {
+                            content.firstChild.nodeValue = msg[d][t].data;
+                        } else if (msg[d][t].type == 'audio') {
+                            player.feed(new Uint8Array(msg[d][t].data));
+                        } else {
+                            console.log("Unhandled content type");
+                        }
                     }
                 }
             }
